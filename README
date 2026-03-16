@@ -1,0 +1,161 @@
+cugpt — C Translation of Karpathy's microgpt
+=============================================
+
+Two C implementations of Andrej Karpathy's microgpt.py: a minimal,
+dependency-free GPT that trains a character-level language model on a
+names dataset and generates hallucinated names at inference time.
+
+  microgpt.py  — original pure-Python reference by Karpathy
+  microgpt.c   — C translation using a Wengert tape for autograd;
+                 zero dependencies beyond libc/libm
+  cugpt.c      — C translation with manual backward pass and
+                 OpenBLAS-accelerated matrix-vector products
+
+MODEL ARCHITECTURE
+------------------
+
+  Architecture  1-layer GPT-2 variant
+  Params        4,192
+  vocab_size    27  (26 lowercase letters + BOS token)
+  n_embd        16
+  n_head        4   (head_dim = 4)
+  block_size    16
+  Activation    ReLU (not GeLU)
+  Norm          RMSNorm (no learnable scale/bias)
+  Optimizer     Adam  lr=0.01 β1=0.85 β2=0.99, linear LR decay
+  Steps         1,000 on Karpathy's names dataset
+
+QUICK START
+-----------
+
+  make
+  ./microgpt
+  ./cugpt
+  python3 microgpt.py     # reference (slow)
+
+All three download input.txt automatically on first run.
+
+BENCHMARK RESULTS
+-----------------
+
+Machine: Ubuntu 22.04 / WSL2, gcc 14.2.0, Python 3.13.3
+Task: 1,000 training steps on names dataset (same algorithm, same data)
+
+Python baseline:
+
+  python3 microgpt.py                               146.11 s
+
+microgpt.c — compiler flag sweep:
+
+  Flags                                             Time (s)   Speedup vs Python
+  -O0                                                  1.592       92×
+  -O1                                                  0.760      192×
+  -O2                                                  0.718      203×
+  -O3                                                  0.729      200×
+  -O2 -march=native                                    0.588      248×
+  -O3 -march=native                                    0.637      229×
+  -O3 -march=native -ffast-math                        0.337      434×
+  -O3 -march=native -ffast-math -funroll-loops         0.323      452×  ← best
+  -O3 -march=native -ffast-math -flto                  0.336      435×
+  -O3 -march=native -ffast-math -funroll-loops -flto   0.332      440×
+
+cugpt.c — compiler flag sweep:
+
+  Flags                                             Time (s)   Speedup vs Python
+  -O0                                                  0.189      773×
+  -O1                                                  0.090     1623×
+  -O2                                                  0.078     1873×
+  -O3                                                  0.073     2001×
+  -O2 -march=native                                    0.077     1897×
+  -O3 -march=native                                    0.082     1782×
+  -O3 -march=native -ffast-math                        0.061     2395×
+  -O3 -march=native -ffast-math -funroll-loops         0.078     1873×
+  -O3 -march=native -ffast-math -flto                  0.059     2476×  ← best
+  -O3 -march=native -ffast-math -funroll-loops -flto   0.064     2283×
+
+Summary:
+
+  Implementation                     Best time   Speedup vs Python
+  ─────────────────────────────────  ─────────   ─────────────────
+  microgpt.py (Python)               146.11 s         1×
+  microgpt.c  (tape autograd)          0.323 s       452×
+  cugpt.c     (BLAS + manual grad)     0.059 s      2476×
+
+Key observations:
+
+  • -ffast-math provides the biggest single-flag win (≈2× for both files).
+    It allows the compiler to reassociate floating-point ops and replace
+    library calls with faster approximations — safe here because we only
+    need single-step loss descent, not bit-exact reproducibility.
+
+  • -funroll-loops helps microgpt.c (small inner loops over tape entries)
+    but slightly hurts cugpt.c (BLAS already handles inner loops).
+
+  • -flto (link-time optimization) wins for cugpt.c by inlining the BLAS
+    wrapper functions across translation units.
+
+  • -march=native alone gives modest gains (248× vs 203× for microgpt.c);
+    the real win comes from combining it with -ffast-math.
+
+  • cugpt.c is 5.5× faster than microgpt.c at their respective bests.
+    The advantage: no tape allocation/traversal overhead, and BLAS kernels
+    exploit SIMD for the linear algebra that dominates the compute.
+
+  • Even the unoptimized cugpt.c (-O0) beats the best microgpt.c build,
+    because eliminating the autograd tape is an algorithmic win, not just
+    a compiler win.
+
+The default Makefile build uses the empirically fastest flags:
+
+  microgpt: -O3 -march=native -ffast-math -funroll-loops
+  cugpt:    -O3 -march=native -ffast-math -flto
+
+IMPLEMENTATION NOTES
+--------------------
+
+microgpt.c
+  Translates the Python scalar-Value autograd graph to a flat Wengert
+  tape: a pre-allocated arena of 4M TapeEntry structs reset each step.
+  Backward is a single reverse scan with no pointer chasing or heap
+  allocation. This is the same structural speedup described in comments
+  inside the Python original ("~4x speedup even in Python").
+
+cugpt.c
+  Discards the autograd tape entirely. Forward activations are saved
+  in a struct array (Activations act[BLOCK_SIZE]) and the backward pass
+  is written analytically. Every matrix-vector product is dispatched
+  through cblas_dgemv; weight gradient accumulation uses cblas_dger
+  (rank-1 outer product update). The result is ~5.5× faster than the
+  tape version at peak optimization.
+
+BUILDING
+--------
+
+  make            # both binaries, best flags
+  make check      # smoke test (10 steps each)
+  make bench      # full flag sweep + Python baseline
+  make install    # to /usr/local (or PREFIX=...)
+  make dist       # creates cugpt-1.0.tar.gz
+
+See INSTALL for dependency details and manual build instructions.
+
+FILES
+-----
+
+  microgpt.py     Original Python reference (Karpathy, gist 8627fe0)
+  microgpt.c      C / tape autograd
+  cugpt.c         C / BLAS + manual gradients
+  Makefile        Build, install, benchmark, dist targets
+  man/cugpt.1     Manual page (covers both cugpt and microgpt)
+  README          This file
+  INSTALL         Build instructions and dependencies
+  COPYING         MIT License
+  AUTHORS         Credits
+  NEWS            User-visible changes
+  ChangeLog       Developer changelog
+
+SEE ALSO
+--------
+
+  Original Python: https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95
+  names dataset:   https://github.com/karpathy/makemore

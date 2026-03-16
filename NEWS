@@ -1,0 +1,11 @@
+cugpt NEWS — user-visible changes
+
+Version 1.0 (2026-03-16)
+  * Initial release.
+  * microgpt.c: tape-based autograd C translation of Karpathy's microgpt.py.
+    Zero dependencies beyond libc/libm. ~4x faster than Python baseline.
+  * cugpt.c: manual backward pass with OpenBLAS-accelerated linear algebra.
+    Eliminates autograd overhead; fastest C variant.
+  * microgpt.py: original pure-Python reference implementation by Karpathy.
+  * Benchmark suite comparing Python, microgpt.c, and cugpt.c across
+    multiple compiler optimization flags.

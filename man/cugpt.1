@@ -1,0 +1,92 @@
+.TH CUGPT 1 "2026-03-16" "cugpt 1.0" "User Commands"
+.SH NAME
+cugpt, microgpt \- minimal single-layer GPT trained on a names dataset
+.SH SYNOPSIS
+.B cugpt
+.br
+.B microgpt
+.SH DESCRIPTION
+.B cugpt
+and
+.B microgpt
+are C translations of Andrej Karpathy's
+.I microgpt.py
+\(em a minimal, dependency-free GPT implementation that demonstrates the
+complete training and inference loop for a character-level language model.
+
+Both programs train a 1-layer GPT-2-style transformer (RMSNorm, ReLU,
+no biases) on 1,000 steps over a names dataset, then generate 20 sample
+names via autoregressive inference.
+
+.B microgpt
+uses a Wengert tape for automatic differentiation and has no dependencies
+beyond
+.I libc
+and
+.IR libm .
+
+.B cugpt
+computes analytical gradients by hand (no autograd) and accelerates all
+matrix-vector products with OpenBLAS, making it the faster variant.
+.SH OPERATION
+On first run, the dataset
+.I input.txt
+is downloaded automatically from Karpathy's makemore repository using
+.BR curl (1)
+or
+.BR wget (1).
+Subsequent runs reuse the local file.
+
+Training runs for 1,000 steps with the Adam optimizer (lr=0.01, \(*b1=0.85,
+\(*b2=0.99, linear decay).  Training loss is printed on a single updating line.
+After training, 20 hallucinated names are printed.
+.SH MODEL
+.TP
+.B Architecture
+1-layer GPT-2 variant
+.TP
+.B vocab_size
+27 (26 lowercase letters + BOS token)
+.TP
+.B n_embd
+16
+.TP
+.B n_head
+4  (head_dim = 4)
+.TP
+.B block_size
+16
+.TP
+.B Parameters
+4,192
+.TP
+.B Activation
+ReLU (not GeLU)
+.TP
+.B Normalization
+RMSNorm (no learnable scale)
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Dataset download failed or
+.I input.txt
+could not be opened.
+.SH FILES
+.TP
+.I input.txt
+Names dataset (downloaded on first run).
+.SH SEE ALSO
+.BR cc (1),
+.BR make (1),
+.BR python3 (1)
+.PP
+Original Python source:
+.I https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95
+.SH AUTHORS
+Original Python algorithm by Andrej Karpathy.
+C translation by David.
+.SH LICENSE
+MIT License.

@@ -1,0 +1,14 @@
+microgpt
+cugpt
+microgpt-*
+cugpt-*
+input.txt
+*.o
+*.a
+*.d
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+cugpt-*.tar.gz

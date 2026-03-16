@@ -1,0 +1,55 @@
+INSTALL — cugpt build instructions
+
+DEPENDENCIES
+============
+
+  microgpt.c requires only:
+    - A C compiler (gcc or clang)
+    - libm (standard math library, always present)
+
+  cugpt.c additionally requires:
+    - libopenblas-dev  (Ubuntu/Debian: apt install libopenblas-dev)
+    - cblas.h header   (included with libopenblas-dev)
+
+  microgpt.py requires:
+    - Python 3.6+  (no third-party packages)
+
+  The benchmark target (make bench) also requires:
+    - python3 in PATH
+
+QUICK BUILD
+===========
+
+  make            # builds both microgpt and cugpt
+  ./microgpt      # train + infer (downloads input.txt if needed)
+  ./cugpt         # train + infer (downloads input.txt if needed)
+
+MANUAL BUILD
+============
+
+  # microgpt (no external deps):
+  cc -O3 -march=native -ffast-math -o microgpt microgpt.c -lm
+
+  # cugpt (requires OpenBLAS):
+  cc -O3 -march=native -ffast-math -o cugpt cugpt.c -lopenblas -lm
+
+  # If cblas.h is not on the default include path:
+  cc -O3 -march=native -ffast-math \
+     -I/usr/include/x86_64-linux-gnu \
+     -o cugpt cugpt.c -lopenblas -lm
+
+INSTALL / UNINSTALL
+===================
+
+  make install    # copies binaries to $(PREFIX)/bin  [default: /usr/local]
+  make uninstall
+
+  To install to a custom prefix:
+    make install PREFIX=$HOME/.local
+
+PYTHON REFERENCE
+================
+
+  python3 microgpt.py
+
+  No pip packages required. Downloads input.txt automatically on first run.

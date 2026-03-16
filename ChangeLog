@@ -1,0 +1,9 @@
+2026-03-16  David
+
+	* Version 1.0 release.
+	* cugpt.c: manual forward/backward with OpenBLAS BLAS primitives.
+	* microgpt.c: Wengert-tape autograd, single-file, zero external deps.
+	* microgpt.py: original Python reference (Karpathy, gist 8627fe0).
+	* Makefile: GNU-standard targets, benchmark suite, flag sweep.
+	* man/cugpt.1: manual page.
+	* README: benchmark results table.
