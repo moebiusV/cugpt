@@ -4,6 +4,7 @@ Two C implementations of Andrej Karpathy's [microgpt.py](https://gist.github.com
 
 | File | Description |
 |---|---|
+| [`microgpt.py`](https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95) | Original pure-Python reference by Karpathy (benchmark baseline, not in repo) |
 | `microgpt.c` | C translation — Wengert tape autograd, zero dependencies beyond libc/libm |
 | `cugpt.c` | C translation — manual backward pass, OpenBLAS-accelerated BLAS |
 
