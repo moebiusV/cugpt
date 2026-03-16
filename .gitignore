@@ -12,3 +12,4 @@ __pycache__/
 .venv/
 venv/
 cugpt-*.tar.gz
+microgpt.py
