@@ -1,5 +1,8 @@
 microgpt
 cugpt
+config.log
+config.status
+autom4te.cache/
 microgpt-*
 cugpt-*
 input.txt
