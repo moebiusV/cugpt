@@ -88,17 +88,16 @@ Machine: Ubuntu 22.04 / WSL2, gcc 14.2.0, Python 3.13.3 — 1,000 training steps
 ## Build
 
 ```sh
-make              # both binaries, best flags
-make check        # smoke test (10 steps each)
-make bench        # full flag sweep + Python baseline
-make install      # to /usr/local (or PREFIX=~/.local)
-make dist         # creates cugpt-1.0.tar.gz
+./configure && make        # detects compiler, OpenBLAS, cblas.h
+make check                 # smoke test (10 steps each)
+make bench                 # full flag sweep + Python baseline
+make install               # to /usr/local (or ./configure --prefix=~/.local)
+make dist                  # creates cugpt-1.0.tar.gz
 ```
 
 **Dependencies:**
 - `microgpt.c` — C compiler + libm (always present)
 - `cugpt.c` — C compiler + libopenblas-dev (`apt install libopenblas-dev`)
-- `microgpt.py` — Python 3.6+, no packages
 
 See [INSTALL](INSTALL) for manual build instructions.
 

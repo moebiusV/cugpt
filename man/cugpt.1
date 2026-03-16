@@ -65,6 +65,41 @@ ReLU (not GeLU)
 .TP
 .B Normalization
 RMSNorm (no learnable scale)
+.SH BUILDING
+.B cugpt
+uses a GNU autoconf build system.
+The standard workflow is:
+.PP
+.RS
+.nf
+./configure && make
+make check
+make install
+.fi
+.RE
+.PP
+.BR configure (1)
+detects the C compiler, libm, libopenblas, the location of
+.IR cblas.h ,
+and whether
+.BR curl (1)
+or
+.BR wget (1)
+is available for dataset download.
+Optimisation flags default to the empirically fastest values:
+.I \-O3 \-march=native \-ffast-math \-funroll\-loops
+for
+.B microgpt
+and
+.I \-O3 \-march=native \-ffast\-math \-flto
+for
+.BR cugpt .
+Override with
+.B CFLAGS_MICROGPT
+or
+.B CFLAGS_CUGPT
+environment variables before running
+.BR configure .
 .SH EXIT STATUS
 .TP
 .B 0
@@ -79,8 +114,9 @@ could not be opened.
 .I input.txt
 Names dataset (downloaded on first run).
 .SH SEE ALSO
-.BR cc (1),
+.BR configure (1),
 .BR make (1),
+.BR cc (1),
 .BR python3 (1)
 .PP
 Original Python source:
