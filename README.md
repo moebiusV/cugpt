@@ -4,7 +4,6 @@ Two C implementations of Andrej Karpathy's [microgpt.py](https://gist.github.com
 
 | File | Description |
 |---|---|
-| `microgpt.py` | Original pure-Python reference by Karpathy |
 | `microgpt.c` | C translation — Wengert tape autograd, zero dependencies beyond libc/libm |
 | `cugpt.c` | C translation — manual backward pass, OpenBLAS-accelerated BLAS |
 
@@ -14,10 +13,10 @@ Two C implementations of Andrej Karpathy's [microgpt.py](https://gist.github.com
 make
 ./microgpt    # 452× faster than Python
 ./cugpt       # 2476× faster than Python
-python3 microgpt.py   # reference
 ```
 
-All three download `input.txt` automatically on first run.
+Both download `input.txt` automatically on first run.
+The original Python reference is at the [gist](https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95) (not included here).
 
 ## Model
 
