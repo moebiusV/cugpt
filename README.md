@@ -1,5 +1,7 @@
 # cugpt — C Translation of Karpathy's microgpt
 
+[github.com/moebiusV/cugpt](https://github.com/moebiusV/cugpt) | `git clone https://github.com/moebiusV/cugpt`
+
 Two C implementations of Andrej Karpathy's [microgpt.py](https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95): a minimal GPT that trains a character-level language model on a names dataset and generates hallucinated names.
 
 | File | Description |
